@@ -49,6 +49,10 @@
     --radius-4xl: calc(var(--radius) * 2.6);
     --font-sans: var(--font-sans);
     --font-label: var(--font-instrument);
+    --font-display: var(--font-manrope);
+    --font-numeric: var(--font-jakarta);
+    --font-tight: var(--font-inter-tight);
+    --font-eyebrow: var(--font-space-mono);
 }
 
 :root {

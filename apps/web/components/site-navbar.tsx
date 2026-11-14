@@ -37,16 +37,31 @@ const getStartedClass =
 export function SiteNavbar() {
   const pathname = usePathname()
   const [open, setOpen] = React.useState(false)
+  const [scrolled, setScrolled] = React.useState(false)
+
+  React.useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 8)
+
+    onScroll()
+    window.addEventListener("scroll", onScroll, { passive: true })
+
+    return () => window.removeEventListener("scroll", onScroll)
+  }, [])
 
   const isActive = (href: string) =>
     pathname === href || pathname.startsWith(`${href}/`)
 
   return (
-    <header className="sticky top-0 z-50 bg-linear-to-b from-[#010103] from-70% to-[#010103]/0 px-4 pt-4 pb-4 sm:px-6 sm:pt-6">
+    <header
+      className={cn(
+        "sticky top-0 z-50 px-4 pt-4 pb-4 transition-colors duration-300 sm:px-6 sm:pt-6 ",
+        scrolled &&
+          "bg-linear-to-b from-[#010103]/95 via-[#010103]/55 to-transparent"
+      )}
+    >
       <nav
         aria-label="Main"
-        className="mx-auto flex h-16 w-full max-w-[1320px] items-center justify-between rounded-2xl bg-[#222222] pr-2 pl-5 sm:h-[74px] sm:pl-6"
-      >
+className="mx-auto flex h-16 w-full max-w-none items-center justify-between rounded-2xl bg-[#222222] pr-2 pl-5 sm:h-[74px] sm:pl-6"      >
         <Link
           href="/"
           aria-label="HireLoop home"
@@ -187,3 +202,5 @@ export function SiteNavbar() {
     </header>
   )
 }
+
+

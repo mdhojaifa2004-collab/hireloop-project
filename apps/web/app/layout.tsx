@@ -1,4 +1,12 @@
-import { Geist, Geist_Mono, Instrument_Sans } from "next/font/google"
+import {
+  Geist,
+  Geist_Mono,
+  Instrument_Sans,
+  Inter_Tight,
+  Manrope,
+  Plus_Jakarta_Sans,
+  Space_Mono,
+} from "next/font/google"
 
 import "@workspace/ui/globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
@@ -16,6 +24,27 @@ const instrumentSans = Instrument_Sans({
   variable: "--font-instrument",
 })
 
+const manrope = Manrope({
+  subsets: ["latin"],
+  variable: "--font-manrope",
+})
+
+const plusJakartaSans = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  variable: "--font-jakarta",
+})
+
+const interTight = Inter_Tight({
+  subsets: ["latin"],
+  variable: "--font-inter-tight",
+})
+
+const spaceMono = Space_Mono({
+  subsets: ["latin"],
+  weight: ["400", "700"],
+  variable: "--font-space-mono",
+})
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -29,7 +58,11 @@ export default function RootLayout({
         "font-sans antialiased",
         geist.variable,
         fontMono.variable,
-        instrumentSans.variable
+        instrumentSans.variable,
+        manrope.variable,
+        plusJakartaSans.variable,
+        interTight.variable,
+        spaceMono.variable
       )}
     >
       <body>
