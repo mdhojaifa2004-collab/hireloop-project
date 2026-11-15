@@ -4,10 +4,12 @@ import * as React from "react"
 import Link from "next/link"
 import {
   ArrowRightIcon,
+  Building2Icon,
   EyeIcon,
   EyeOffIcon,
   LockIcon,
   MailIcon,
+  ShieldCheckIcon,
   UserIcon,
 } from "lucide-react"
 
@@ -19,6 +21,8 @@ import { cn } from "@workspace/ui/lib/utils"
 
 type AuthMode = "sign-in" | "sign-up"
 
+export type UserRole = "seeker" | "recruiter" | "admin"
+
 export type AuthFormData = {
   /** Empty string on the sign-in page. */
   name: string
@@ -26,6 +30,8 @@ export type AuthFormData = {
   password: string
   /** Empty string on the sign-in page. */
   confirmPassword: string
+  /** "seeker" on the sign-in page. */
+  role: UserRole
   remember: boolean
   acceptTerms: boolean
 }
@@ -44,6 +50,12 @@ const fieldShellClass =
   "relative flex h-12 items-center rounded-xl border border-white/10 bg-white/[0.04] transition-colors focus-within:border-primary/60 focus-within:bg-white/[0.06]"
 const fieldIconClass =
   "pointer-events-none absolute left-4 size-[18px] text-white/40"
+
+const USER_ROLES: { value: UserRole; label: string; icon: typeof UserIcon }[] = [
+  { value: "seeker", label: "Job Seeker", icon: UserIcon },
+  { value: "recruiter", label: "Recruiter", icon: Building2Icon },
+  { value: "admin", label: "Admin", icon: ShieldCheckIcon },
+]
 
 function Field({
   id,
@@ -125,6 +137,37 @@ function PasswordField({
   )
 }
 
+function RoleSelector() {
+  return (
+    <div className="flex flex-col gap-2">
+      <span id="role-label" className={fieldLabelClass}>
+        Account type
+      </span>
+      <div
+        role="radiogroup"
+        aria-labelledby="role-label"
+        className="grid grid-cols-3 gap-1 rounded-xl border border-white/10 bg-white/[0.04] p-1"
+      >
+        {USER_ROLES.map(({ value, label, icon: Icon }) => (
+          <label key={value} className="cursor-pointer">
+            <input
+              type="radio"
+              name="role"
+              value={value}
+              defaultChecked={value === "seeker"}
+              className="peer sr-only"
+            />
+            <span className="flex h-10 items-center justify-center gap-1.5 rounded-lg font-label text-xs font-medium text-white/55 transition-colors peer-checked:bg-primary peer-checked:text-white peer-checked:shadow-[inset_0_1px_0_rgba(255,255,255,0.25)] peer-focus-visible:ring-2 peer-focus-visible:ring-primary/50 sm:gap-2 sm:text-[13px]">
+              <Icon className="hidden size-4 sm:block" aria-hidden />
+              {label}
+            </span>
+          </label>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 function GoogleIcon({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" aria-hidden className={className}>
@@ -169,11 +212,15 @@ export function AuthForm({ mode, onSubmit }: AuthFormProps) {
       return
     }
 
+    const role =
+      USER_ROLES.find(({ value }) => value === values.role)?.value ?? "seeker"
+
     const data: AuthFormData = {
       name: String(values.name ?? ""),
       email: String(values.email ?? ""),
       password: String(values.password ?? ""),
       confirmPassword: String(values.confirmPassword ?? ""),
+      role,
       remember: values.remember === "on",
       acceptTerms: values.acceptTerms === "on",
     }
@@ -297,6 +344,10 @@ export function AuthForm({ mode, onSubmit }: AuthFormProps) {
               placeholder="Re-enter password"
               autoComplete="new-password"
             />
+          ) : null}
+
+          {isSignUp ? (
+            <RoleSelector />
           ) : null}
 
           {isSignUp ? (
