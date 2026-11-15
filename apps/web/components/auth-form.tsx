@@ -19,10 +19,27 @@ import { cn } from "@workspace/ui/lib/utils"
 
 type AuthMode = "sign-in" | "sign-up"
 
+export type AuthFormData = {
+  /** Empty string on the sign-in page. */
+  name: string
+  email: string
+  password: string
+  /** Empty string on the sign-in page. */
+  confirmPassword: string
+  remember: boolean
+  acceptTerms: boolean
+}
+
+type AuthFormProps = {
+  mode: AuthMode
+  /** Called with the validated form values. Wire this to better-auth. */
+  onSubmit?: (data: AuthFormData) => void | Promise<void>
+}
+
 const fieldLabelClass =
   "font-label text-[13px] font-medium tracking-[0.01em] text-white/80"
 const inputClass =
-  "h-full rounded-none border-0 bg-transparent! pr-4 pl-11 text-[15px] text-white shadow-none placeholder:text-white/35 focus-visible:ring-0 aria-invalid:ring-0"
+  "h-full rounded-none border-0 bg-transparent! pr-4 pl-11 text-base text-white shadow-none placeholder:text-white/35 focus-visible:ring-0 aria-invalid:ring-0"
 const fieldShellClass =
   "relative flex h-12 items-center rounded-xl border border-white/10 bg-white/[0.04] transition-colors focus-within:border-primary/60 focus-within:bg-white/[0.06]"
 const fieldIconClass =
@@ -96,7 +113,7 @@ function PasswordField({
         onClick={() => setVisible((v) => !v)}
         aria-label={visible ? "Hide password" : "Show password"}
         aria-pressed={visible}
-        className="absolute right-3 flex size-8 items-center justify-center rounded-lg text-white/45 transition-colors hover:text-white focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:outline-none"
+        className="absolute right-3 flex size-8 items-center justify-center rounded-lg text-white/45 transition-colors after:absolute after:-inset-2 hover:text-white focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:outline-none"
       >
         {visible ? (
           <EyeOffIcon className="size-[18px]" />
@@ -131,14 +148,15 @@ function GoogleIcon({ className }: { className?: string }) {
   )
 }
 
-export function AuthForm({ mode }: { mode: AuthMode }) {
+export function AuthForm({ mode, onSubmit }: AuthFormProps) {
   const isSignUp = mode === "sign-up"
   const [error, setError] = React.useState<string | null>(null)
+  const [pending, setPending] = React.useState(false)
   const [collected, setCollected] = React.useState<
     Record<string, FormDataEntryValue> | null
   >(null)
 
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
 
     const form = event.currentTarget
@@ -151,12 +169,35 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
       return
     }
 
+    const data: AuthFormData = {
+      name: String(values.name ?? ""),
+      email: String(values.email ?? ""),
+      password: String(values.password ?? ""),
+      confirmPassword: String(values.confirmPassword ?? ""),
+      remember: values.remember === "on",
+      acceptTerms: values.acceptTerms === "on",
+    }
+
     setError(null)
     setCollected(values)
+    setPending(true)
 
-    // TODO: replace with the real better-auth call
-    // signIn.email({ email, password }) / signUp.email({ name, email, password })
-    console.info(`[auth:${mode}] collected form data`, values)
+    try {
+      if (onSubmit) {
+        await onSubmit(data)
+      } else {
+        // No handler wired up yet — just surface what was collected.
+        console.info(`[auth:${mode}] collected form data`, data)
+      }
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Something went wrong. Please try again."
+      )
+    } finally {
+      setPending(false)
+    }
   }
 
   // Never render raw passwords back to the screen, even in this demo.
@@ -253,7 +294,7 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
               id="confirmPassword"
               name="confirmPassword"
               label="Confirm password"
-              placeholder="Re-enter your password"
+              placeholder="Re-enter password"
               autoComplete="new-password"
             />
           ) : null}
@@ -320,6 +361,7 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
 
           <Button
             type="submit"
+            disabled={pending}
             className="h-12 w-full rounded-xl border border-[#090a15]/10 bg-primary font-label text-[15px] font-medium text-white shadow-[inset_0_3px_10px_rgba(255,255,255,0.2)] transition-colors hover:bg-primary/90"
           >
             {isSignUp ? "Create account" : "Sign In"}

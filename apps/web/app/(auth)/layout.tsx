@@ -12,7 +12,7 @@ export default function AuthLayout({
   children: React.ReactNode
 }>) {
   return (
-    <div className="dark relative isolate flex min-h-svh flex-col overflow-hidden bg-[#010103] text-white">
+    <div className="dark relative isolate flex min-h-svh flex-col overflow-hidden bg-[#010103] pt-[env(safe-area-inset-top)] pr-[env(safe-area-inset-right)] pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)] text-white">
       {/* Backdrop */}
       <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
         <div className="absolute top-[-240px] left-1/2 h-[760px] w-[1100px] -translate-x-1/2 rounded-full bg-[radial-gradient(closest-side,rgba(92,83,254,0.32),rgba(92,83,254,0.12)_55%,transparent_100%)] blur-[100px]" />
@@ -46,14 +46,14 @@ export default function AuthLayout({
         <Link
           href="/"
           aria-label="HireLoop home"
-          className="flex items-center rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
+          className="flex shrink-0 items-center rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
         >
           <Image src={logo} alt="HireLoop" priority className="h-8 w-auto sm:h-10" />
         </Link>
 
         <Link
           href="/"
-          className="inline-flex items-center gap-2 rounded-lg font-label text-sm text-white/60 transition-colors hover:text-white focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:outline-none"
+          className="inline-flex shrink-0 items-center gap-2 rounded-lg font-label text-sm text-white/60 transition-colors hover:text-white focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:outline-none"
         >
           <ArrowLeftIcon className="size-4" />
           Back to home

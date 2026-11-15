@@ -15,7 +15,7 @@ export default function SignUpPage() {
         name: data.name,
         email: data.email,
         password: data.password,
-        callbackURL: "/",
+        callbackURL: '/' ,
       });
 
     if (error) {
