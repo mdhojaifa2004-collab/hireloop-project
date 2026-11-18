@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { LayoutDashboard, Plus } from "lucide-react"
+import { Plus } from "lucide-react"
 
 import {
     Sidebar,
@@ -18,10 +18,16 @@ import {
     SidebarMenuButton,
 } from "@workspace/ui/components/sidebar"
 
+import { menuItemsByRole } from "./menu-items"
+import {
+    SidebarBrand,
+    SidebarLogoutButton,
+    SidebarPublicLinks,
+    SidebarUserCard,
+} from "./sidebar-parts"
+
 // Recruiter-only navigation. No Admin or Seeker links belong in this file.
-const RECRUITER_LINKS = [
-    { label: "Dashboard", href: "/dashboard/recruiter" },
-] as const
+const RECRUITER_LINKS = menuItemsByRole.recruiter
 
 export function RecruiterSidebar() {
     // Current URL, used to highlight the active link.
@@ -29,7 +35,11 @@ export function RecruiterSidebar() {
 
     return (
         <Sidebar>
-            <SidebarHeader />
+            {/* Brand + the logged-in user's avatar, name, email and role */}
+            <SidebarHeader>
+                <SidebarBrand />
+                <SidebarUserCard />
+            </SidebarHeader>
             <SidebarContent>
                 <SidebarGroup />
                 <SidebarGroup />
@@ -41,22 +51,27 @@ export function RecruiterSidebar() {
                     </SidebarGroupAction>
                     <SidebarGroupContent>
                         <SidebarMenu>
-                            {RECRUITER_LINKS.map((link) => (
-                                <SidebarMenuItem key={link.href}>
+                            {RECRUITER_LINKS.map((item) => (
+                                <SidebarMenuItem key={item.id}>
                                     <SidebarMenuButton
-                                        isActive={pathname === link.href}
-                                        render={<Link href={link.href} />}
+                                        isActive={pathname === item.url}
+                                        render={<Link href={item.url} />}
                                     >
-                                        <LayoutDashboard />
-                                        <span>{link.label}</span>
+                                        <item.icon />
+                                        <span>{item.name}</span>
                                     </SidebarMenuButton>
                                 </SidebarMenuItem>
                             ))}
                         </SidebarMenu>
                     </SidebarGroupContent>
                 </SidebarGroup>
+
+                {/* Links that leave the dashboard and go to the public website */}
+                <SidebarPublicLinks />
             </SidebarContent>
-            <SidebarFooter />
+            <SidebarFooter>
+                <SidebarLogoutButton />
+            </SidebarFooter>
         </Sidebar>
     )
 }
