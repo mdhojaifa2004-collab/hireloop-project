@@ -1,13 +1,14 @@
 import {
+    Bookmark,
     Briefcase,
     Building,
-    ChartColumn,
     CreditCard,
     FileText,
     House,
     LayoutDashboard,
+    Plus,
     Search,
-    UserCheck,
+    Settings,
     Users,
     type LucideIcon,
 } from "lucide-react"
@@ -26,25 +27,49 @@ export type MenuItem = {
 /**
  * Navigation shared by the three independent dashboards.
  * Each sidebar reads ONLY its own key, so no role ever sees another role's links.
+ *
+ * FIX: Every entry now points to a real page that exists in app/dashboard.
+ * The previous anchor-only links (#stats, #users, ...) were replaced so each
+ * sidebar item opens an actual dashboard page.
  */
 export const menuItemsByRole: Record<Role, MenuItem[]> = {
     seeker: [
-        { id: "seeker-overview", name: "Overview", url: "/dashboard/seeker", icon: LayoutDashboard },
-        { id: "seeker-stats", name: "Statistics", url: "/dashboard/seeker#stats", icon: ChartColumn },
-        { id: "seeker-jobs", name: "Recommended Jobs", url: "/dashboard/seeker#recommended-jobs", icon: Search },
-        { id: "seeker-apps", name: "Applications", url: "/dashboard/seeker#applications", icon: FileText },
+        { id: "seeker-overview", name: "Dashboard", url: "/dashboard/seeker", icon: LayoutDashboard },
+        { id: "seeker-saved", name: "Saved Jobs", url: "/dashboard/seeker/saved-jobs", icon: Bookmark },
+        { id: "seeker-applications", name: "My Applications", url: "/dashboard/seeker/my-applications", icon: FileText },
+        { id: "seeker-billing", name: "Billing & Subscription", url: "/dashboard/seeker/billing", icon: CreditCard },
+        { id: "seeker-settings", name: "Settings", url: "/dashboard/seeker/settings", icon: Settings },
     ],
     recruiter: [
-        { id: "recruiter-overview", name: "Overview", url: "/dashboard/recruiter", icon: LayoutDashboard },
-        { id: "recruiter-stats", name: "Statistics", url: "/dashboard/recruiter#stats", icon: ChartColumn },
-        { id: "recruiter-jobs", name: "Job Posts", url: "/dashboard/recruiter#job-posts", icon: Briefcase },
-        { id: "recruiter-candidates", name: "Candidates", url: "/dashboard/recruiter#candidates", icon: UserCheck },
+        { id: "recruiter-overview", name: "Dashboard", url: "/dashboard/recruiter", icon: LayoutDashboard },
+        { id: "recruiter-new", name: "Add New Job", url: "/dashboard/recruiter/new", icon: Plus },
+        { id: "recruiter-jobs", name: "Manage Job Posts", url: "/dashboard/recruiter/manage-jobs", icon: Briefcase },
     ],
     admin: [
-        { id: "admin-overview", name: "Overview", url: "/dashboard/admin", icon: LayoutDashboard },
-        { id: "admin-stats", name: "Statistics", url: "/dashboard/admin#stats", icon: ChartColumn },
-        { id: "admin-users", name: "User Management", url: "/dashboard/admin#users", icon: Users },
+        { id: "admin-overview", name: "Dashboard", url: "/dashboard/admin", icon: LayoutDashboard },
+        { id: "admin-users", name: "Manage Users", url: "/dashboard/admin/users", icon: Users },
+        { id: "admin-jobs", name: "Manage Jobs", url: "/dashboard/admin/jobs", icon: Briefcase },
+        { id: "admin-payments", name: "Payments & Subscriptions", url: "/dashboard/admin/payments", icon: CreditCard },
     ],
+}
+
+/**
+ * FIX: Nested routes now keep their parent item highlighted.
+ * Dashboard roots only match exactly so "/dashboard/admin" is not highlighted
+ * while browsing "/dashboard/admin/users".
+ */
+const DASHBOARD_ROOTS = new Set([
+    "/dashboard/admin",
+    "/dashboard/recruiter",
+    "/dashboard/seeker",
+])
+
+export function isNavItemActive(pathname: string, url: string) {
+    if (DASHBOARD_ROOTS.has(url)) {
+        return pathname === url
+    }
+
+    return pathname === url || pathname.startsWith(`${url}/`)
 }
 
 /**

@@ -22,11 +22,6 @@ import logo from "@/app/assets/logo.png"
 import { useSession, signOut } from "@/lib/auth-client"
 
 // Navbar-এর সব Navigation Link
-const NAV_LINKS = [
-  { label: "Browse Jobs", href: "/jobs" },
-  { label: "Company", href: "/companies" },
-  { label: "Pricing", href: "/pricing" },
-] as const
 
 // Navbar Link-এর Design
 const navLinkClass =
@@ -46,10 +41,29 @@ const getStartedClass =
 export function SiteNavbar() {
   const pathname = usePathname()
 
+  // FIX: The session hook must run before NAV_LINKS is built. The old order
+  // read `session` before it was declared, which crashed the navbar at runtime.
+  const { data: session } = useSession()
+
   const [open, setOpen] = React.useState(false)
   const [scrolled, setScrolled] = React.useState(false)
 
-  const { data: session } = useSession()
+  // FIX: Replaced `/Dashboard/seker` with the real lowercase dashboard routes.
+  // Guests are sent to sign-in instead of a broken dashboard URL.
+  const role = session?.user?.role
+  const dashboardHref =
+    role === "admin" || role === "recruiter"
+      ? `/dashboard/${role}`
+      : session?.user
+        ? "/dashboard/seeker"
+        : "/sign-in"
+
+  const NAV_LINKS = [
+    { label: "Browse Jobs", href: "/jobs" },
+    { label: "Company", href: "/companies" },
+    { label: "Pricing", href: "/pricing" },
+    { label: "Dashboard", href: dashboardHref },
+  ] as const
 
   // Scroll করলে Navbar-এর Background পরিবর্তন হবে
   React.useEffect(() => {
@@ -77,7 +91,7 @@ export function SiteNavbar() {
       className={cn(
         "sticky top-0 z-50 px-4 pb-4 pt-4 transition-colors duration-300 sm:px-6 sm:pt-6",
         scrolled &&
-          "bg-linear-to-b from-[#010103]/95 via-[#010103]/55 to-transparent"
+        "bg-linear-to-b from-[#010103]/95 via-[#010103]/55 to-transparent"
       )}
     >
       <nav
@@ -264,7 +278,7 @@ export function SiteNavbar() {
                     className={cn(
                       "rounded-xl px-3 py-3 text-base text-white/80 transition-all duration-300 hover:bg-[#645AFF]/10 hover:text-[#8E85FF]",
                       isActive(link.href) &&
-                        "bg-[#645AFF]/15 font-semibold text-[#8E85FF]"
+                      "bg-[#645AFF]/15 font-semibold text-[#8E85FF]"
                     )}
                   >
                     {link.label}

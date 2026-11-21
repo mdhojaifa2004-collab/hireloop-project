@@ -1,13 +1,13 @@
+import Link from "next/link"
 import {
     ArrowUpRight,
     Briefcase,
     CalendarCheck,
-    CircleCheck,
     Clock,
     MapPin,
-    Send,
+    Plus,
     Sparkles,
-    UserCheck,
+    Trophy,
     Users,
 } from "lucide-react"
 
@@ -20,150 +20,120 @@ import {
 } from "../../components/dashboard-ui"
 
 /**
- * Recruiter dashboard.
- * All numbers below are SAMPLE data. Later we replace them with real MongoDB queries.
- * Section ids (stats / job-posts / candidates) are the sidebar anchor targets.
+ * Recruiter dashboard overview.
+ *
+ * FIX: This file used to be a copy of the recruiter layout, so the page rendered
+ * a second sidebar inside <main> and had no dashboard content. It is now a real
+ * overview page that uses the shared dashboard-ui components.
+ * All numbers below are SAMPLE data until the backend API is connected.
  */
 
-// Top stat cards — the same four numbers the page had before, now with icons.
 const STATS = [
     {
         id: "active-jobs",
-        label: "Active Jobs",
+        label: "Active Job Posts",
         value: "3",
         change: "2 closing this month",
         icon: Briefcase,
         tone: "purple" as const,
     },
     {
-        id: "new-applicants",
-        label: "New Applicants",
-        value: "12",
-        change: "+5 since yesterday",
+        id: "applicants",
+        label: "Total Applicants",
+        value: "100",
+        change: "+18 this week",
         icon: Users,
         tone: "blue" as const,
     },
     {
         id: "interviews",
         label: "Interviews Scheduled",
-        value: "4",
-        change: "Next: tomorrow, 10:00",
+        value: "6",
+        change: "3 upcoming",
         icon: CalendarCheck,
         tone: "green" as const,
     },
     {
-        id: "offers",
-        label: "Offers Sent",
-        value: "1",
-        change: "Waiting for reply",
-        icon: Send,
+        id: "hired",
+        label: "Hired This Month",
+        value: "2",
+        change: "Offers accepted",
+        icon: Trophy,
         tone: "amber" as const,
     },
 ] as const
 
-// Secondary one-line totals from the Figma design.
-const TOTALS = [
-    { id: "total-posts", label: "Total Job Posts", value: "3" },
-    { id: "total-applicants", label: "Total Applicants", value: "12" },
-    { id: "jobs-closed", label: "Jobs Closed", value: "1" },
-] as const
-
-// Applicants per job — reuses the numbers already shown in "Your job posts".
-const APPLICANTS_PER_JOB = [
-    { label: "Senior Frontend Engineer", value: "8", percent: 100, tone: "purple" as const },
-    { label: "Product Designer", value: "4", percent: 50, tone: "blue" as const },
-    { label: "Backend Developer", value: "0", percent: 3, tone: "gray" as const },
+// Applications received per month (sample).
+const APPLICANT_ACTIVITY = [
+    { label: "Mar", value: 9 },
+    { label: "Apr", value: 14 },
+    { label: "May", value: 11 },
+    { label: "Jun", value: 18 },
+    { label: "Jul", value: 16 },
+    { label: "Aug", value: 23 },
 ]
 
-// Hiring funnel — each stage is a subset of the previous one.
-const FUNNEL = [
-    { label: "Applied", value: 12 },
-    { label: "Screening", value: 5 },
-    { label: "Interview", value: 4 },
-    { label: "Offer", value: 1 },
+// Where applicants currently sit in the pipeline (sample).
+const PIPELINE = [
+    { label: "New applications", value: "34", percent: 100, tone: "purple" as const },
+    { label: "In review", value: "21", percent: 62, tone: "blue" as const },
+    { label: "Interviewing", value: "6", percent: 18, tone: "green" as const },
+    { label: "Hired", value: "2", percent: 6, tone: "amber" as const },
 ]
 
-// The original three job posts, now with extra detail.
 const JOB_POSTS = [
     {
-        id: "post-1",
-        title: "Senior Frontend Engineer",
+        id: 1,
+        title: "Frontend Developer",
+        category: "Engineering & Tech",
+        place: "Dhaka",
+        applicants: 24,
+        status: "Active",
+        tone: "green" as const,
+    },
+    {
+        id: 2,
+        title: "Senior Product Designer",
+        category: "Design",
+        place: "Hybrid",
+        applicants: 18,
+        status: "Active",
+        tone: "green" as const,
+    },
+    {
+        id: 3,
+        title: "DevOps Specialist",
+        category: "Engineering & Tech",
         place: "Remote",
-        type: "Full-time",
-        applicants: "8 applicants",
-        status: "Active" as const,
-        tone: "green" as const,
-    },
-    {
-        id: "post-2",
-        title: "Product Designer",
-        place: "Hybrid — New York",
-        type: "Full-time",
-        applicants: "4 applicants",
-        status: "Active" as const,
-        tone: "green" as const,
-    },
-    {
-        id: "post-3",
-        title: "Backend Developer",
-        place: "On-site — Austin",
-        type: "Contract",
-        applicants: "0 applicants",
-        status: "Draft" as const,
-        tone: "gray" as const,
-    },
-] as const
-
-// The original two candidates to review.
-const CANDIDATES = [
-    {
-        id: "cand-1",
-        name: "Alex Morgan",
-        role: "Senior Frontend Engineer",
-        status: "New",
-        tone: "purple" as const,
-    },
-    {
-        id: "cand-2",
-        name: "Priya Shah",
-        role: "Product Designer",
-        status: "Interview",
+        applicants: 12,
+        status: "Active",
         tone: "green" as const,
     },
 ] as const
 
-// Newest applications, matching the "Recent Applications" block in the design.
-const RECENT_APPLICATIONS = [
+// Next interviews on the calendar (sample).
+const UPCOMING_INTERVIEWS = [
     {
-        id: "recent-1",
-        name: "Alex Morgan",
-        job: "Senior Frontend Engineer",
-        time: "10 minutes ago",
+        id: "interview-1",
+        candidate: "Ayesha Rahman",
+        role: "Frontend Developer",
+        time: "Today · 3:00 PM",
     },
     {
-        id: "recent-2",
-        name: "Priya Shah",
-        job: "Product Designer",
-        time: "1 hour ago",
+        id: "interview-2",
+        candidate: "Daniel Kim",
+        role: "Senior Product Designer",
+        time: "Tomorrow · 11:30 AM",
     },
     {
-        id: "recent-3",
-        name: "Jordan Lee",
-        job: "Senior Frontend Engineer",
-        time: "3 hours ago",
+        id: "interview-3",
+        candidate: "Fatima Noor",
+        role: "Frontend Developer",
+        time: "Nov 22 · 1:00 PM",
     },
 ] as const
 
-// "Alex Morgan" -> "AM"
-function initials(name: string) {
-    return name
-        .split(" ")
-        .slice(0, 2)
-        .map((part) => part[0])
-        .join("")
-}
-
-const RecruiterDashboardPage = () => {
+export default function RecruiterDashboardPage() {
     return (
         <div className="space-y-6 p-4 sm:p-6">
             <header className="flex flex-wrap items-start justify-between gap-3">
@@ -176,21 +146,23 @@ const RecruiterDashboardPage = () => {
                         Recruiter Dashboard
                     </h2>
                     <p className="mt-1 text-sm text-muted-foreground">
-                        Post jobs and manage the candidates who apply.
+                        Post jobs, review applicants and keep hiring on track.
                     </p>
                 </div>
 
-                <div className="flex items-center gap-2 rounded-xl border border-border bg-card px-3 py-2 text-xs text-muted-foreground">
-                    <CircleCheck className="size-4 text-emerald-500" />
-                    Hiring pipeline is active
-                </div>
+                <Link
+                    href="/dashboard/recruiter/new"
+                    className="inline-flex items-center gap-2 rounded-xl bg-[#645AFF] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#5146e8] focus-visible:ring-2 focus-visible:ring-[#645AFF]/60 focus-visible:outline-none"
+                >
+                    <Plus className="size-4" />
+                    Post a Job
+                </Link>
             </header>
 
             {/* Recruiter-only statistics */}
             <section
-                id="stats"
                 aria-label="Recruiter statistics"
-                className="grid scroll-mt-20 gap-3 sm:grid-cols-2 lg:grid-cols-4"
+                className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4"
             >
                 {STATS.map((stat) => (
                     <StatCard
@@ -204,54 +176,54 @@ const RecruiterDashboardPage = () => {
                 ))}
             </section>
 
-            {/* Extra totals from the Figma design */}
-            <section
-                aria-label="Recruiter totals"
-                className="grid gap-3 rounded-xl border border-border bg-card p-4 sm:grid-cols-3"
-            >
-                {TOTALS.map((total) => (
-                    <div key={total.id}>
-                        <p className="text-xs font-medium text-muted-foreground">
-                            {total.label}
-                        </p>
-                        <p className="mt-1 text-xl font-semibold">{total.value}</p>
-                    </div>
-                ))}
-            </section>
-
-            {/* Applicant breakdown + hiring funnel */}
-            <section className="grid gap-3 lg:grid-cols-2">
+            {/* Applicant activity + pipeline */}
+            <section className="grid gap-3 lg:grid-cols-3">
                 <SectionCard
-                    title="Applicants per job"
-                    description="Where your candidates are coming from"
+                    className="lg:col-span-2"
+                    title="Applicant activity"
+                    description="Applications received over the last 6 months"
                     action={
                         <span className="inline-flex items-center gap-1 rounded-lg bg-emerald-500/10 px-2 py-1 text-xs font-medium text-emerald-600 dark:text-emerald-400">
                             <ArrowUpRight className="size-3.5" />
-                            +12%
+                            +11.4%
                         </span>
                     }
                 >
-                    <BreakdownBar items={APPLICANTS_PER_JOB} />
+                    <BarChart data={APPLICANT_ACTIVITY} />
                 </SectionCard>
 
                 <SectionCard
-                    title="Hiring funnel"
-                    description="How candidates move through your process"
+                    title="Hiring pipeline"
+                    description="Where your applicants are right now"
                 >
-                    <BarChart data={FUNNEL} />
+                    <BreakdownBar items={PIPELINE} />
+
+                    <div className="mt-4 rounded-lg bg-muted/60 p-3">
+                        <p className="text-xs text-muted-foreground">
+                            Response rate (7 days)
+                        </p>
+                        <p className="mt-1 text-lg font-semibold">86%</p>
+                    </div>
                 </SectionCard>
             </section>
 
-            {/* Recruiter-only job posting overview */}
+            {/* Current job posts */}
             <SectionCard
-                id="job-posts"
                 title="Your job posts"
-                description="Live roles and how many people applied"
+                description="Open roles and how many people applied"
+                action={
+                    <Link
+                        href="/dashboard/recruiter/manage-jobs"
+                        className="text-xs font-medium text-[#645AFF] hover:underline dark:text-[#8E85FF]"
+                    >
+                        Manage all
+                    </Link>
+                }
             >
                 <ul className="divide-y divide-border">
-                    {JOB_POSTS.map((post) => (
+                    {JOB_POSTS.map((job) => (
                         <li
-                            key={post.id}
+                            key={job.id}
                             className="flex flex-wrap items-center justify-between gap-3 py-3 text-sm"
                         >
                             <div className="flex min-w-0 items-center gap-3">
@@ -259,101 +231,71 @@ const RecruiterDashboardPage = () => {
                                     <Briefcase className="size-4" />
                                 </span>
                                 <div className="min-w-0">
-                                    <p className="truncate font-medium">{post.title}</p>
+                                    <p className="truncate font-medium">
+                                        {job.title}
+                                    </p>
                                     <p className="mt-0.5 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                                        <span>{job.category}</span>
+                                        <span aria-hidden>•</span>
                                         <span className="inline-flex items-center gap-1">
                                             <MapPin className="size-3" />
-                                            {post.place}
+                                            {job.place}
                                         </span>
-                                        <span aria-hidden>•</span>
-                                        <span>{post.type}</span>
                                     </p>
                                 </div>
                             </div>
 
                             <div className="flex items-center gap-3">
                                 <span className="text-xs text-muted-foreground">
-                                    {post.applicants}
+                                    {job.applicants} applicants
                                 </span>
-                                <StatusPill tone={post.tone}>{post.status}</StatusPill>
+                                <StatusPill tone={job.tone}>{job.status}</StatusPill>
+                                {/* FIX: These overview rows are sample data, so
+                                    link to the live management list instead of a
+                                    demo id that does not exist in MongoDB. */}
+                                <Link
+                                    href="/dashboard/recruiter/manage-jobs"
+                                    aria-label="Manage job posts"
+                                    className="text-xs font-medium text-[#645AFF] hover:underline dark:text-[#8E85FF]"
+                                >
+                                    Manage
+                                </Link>
                             </div>
                         </li>
                     ))}
                 </ul>
             </SectionCard>
 
-            {/* Recruiter-only candidate management */}
+            {/* Upcoming interviews */}
             <SectionCard
-                id="candidates"
-                title="Candidates to review"
-                description="People waiting for your decision"
+                title="Upcoming interviews"
+                description="Your next conversations with candidates"
             >
-                <ul className="divide-y divide-border">
-                    {CANDIDATES.map((candidate) => (
-                        <li
-                            key={candidate.id}
-                            className="flex flex-wrap items-center justify-between gap-3 py-3 text-sm"
-                        >
-                            <div className="flex min-w-0 items-center gap-3">
-                                <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[#645AFF] text-xs font-semibold text-white">
-                                    {initials(candidate.name)}
-                                </span>
-                                <div className="min-w-0">
-                                    <p className="truncate font-medium">
-                                        {candidate.name}
-                                    </p>
-                                    <p className="text-xs text-muted-foreground">
-                                        {candidate.role}
-                                    </p>
-                                </div>
+                <ul className="space-y-3">
+                    {UPCOMING_INTERVIEWS.map((interview) => (
+                        <li key={interview.id} className="flex gap-3">
+                            <span
+                                aria-hidden
+                                className="mt-1.5 size-2 shrink-0 rounded-full bg-[#645AFF]"
+                            />
+                            <div className="min-w-0">
+                                <p className="text-sm font-medium">
+                                    {interview.candidate} — {interview.role}
+                                </p>
+                                <p className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                                    <Clock className="size-3" />
+                                    {interview.time}
+                                </p>
                             </div>
-
-                            <StatusPill tone={candidate.tone}>
-                                {candidate.status}
-                            </StatusPill>
-                        </li>
-                    ))}
-                </ul>
-            </SectionCard>
-
-            {/* Recent applications (from the Figma design) */}
-            <SectionCard
-                title="Recent applications"
-                description="Newest people who applied to your jobs"
-                action={
-                    <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-                        <UserCheck className="size-3.5" />
-                        12 total
-                    </span>
-                }
-            >
-                <ul className="divide-y divide-border">
-                    {RECENT_APPLICATIONS.map((application) => (
-                        <li
-                            key={application.id}
-                            className="flex flex-wrap items-center justify-between gap-3 py-3 text-sm"
-                        >
-                            <span className="flex min-w-0 items-center gap-2">
-                                <span className="font-medium">{application.name}</span>
-                                <span className="text-muted-foreground">
-                                    applied for
-                                </span>
-                                <span className="truncate">{application.job}</span>
-                            </span>
-                            <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-                                <Clock className="size-3.5" />
-                                {application.time}
-                            </span>
                         </li>
                     ))}
                 </ul>
             </SectionCard>
 
             <p className="text-xs text-muted-foreground">
-                Sample data for now — replace these numbers with real MongoDB queries later.
+                Sample data for now — replace these numbers with real MongoDB
+                queries when the recruiter API is connected.
             </p>
         </div>
-    );
-};
-
-export default RecruiterDashboardPage;
+    )
+}

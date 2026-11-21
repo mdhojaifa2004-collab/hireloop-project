@@ -6,10 +6,12 @@ const client = new MongoClient(process.env.BETTER_AUTH_MONGO_DB_URL as string);
 const db = client.db('hireloopdb');
 
 /**
- * Roles a user can pick on the sign-up form.
+ * Roles a user can pick on the public sign-up form.
+ * Admin is intentionally excluded: admin accounts must be provisioned by an
+ * operator, never self-assigned during registration.
  * Keep in sync with `UserRole` in apps/web/components/auth-form.tsx.
  */
-const SIGNUP_ROLES = ["seeker", "recruiter", "admin"] as const;
+const SIGNUP_ROLES = ["seeker", "recruiter"] as const;
 
 const roleSchema = {
   "~standard": {
@@ -42,7 +44,9 @@ export const auth = betterAuth({
   user: {
     additionalFields: {
       role: {
-        type: ["seeker", 'recruiter', 'admin'],
+        // Stored as a string so existing admin accounts still work. The input
+        // validator below blocks admin (and any other value) at sign-up/update.
+        type: "string",
         required: false,
         defaultValue: "seeker",
         input: true,
@@ -54,12 +58,18 @@ export const auth = betterAuth({
     }
   },
 
-  socialProviders: {
-    google: {
-      clientId: process.env.GOOGLE_CLIENT_ID as string,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
-    },
-  },
+  // Only register Google when both credentials exist. Registering it with empty
+  // values makes better-auth warn and exposes a button that cannot work.
+  ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
+    ? {
+        socialProviders: {
+          google: {
+            clientId: process.env.GOOGLE_CLIENT_ID,
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+          },
+        },
+      }
+    : {}),
 
   database: mongodbAdapter(db, {
     client,

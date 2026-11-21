@@ -2,7 +2,6 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Plus } from "lucide-react"
 
 import {
     Sidebar,
@@ -11,14 +10,13 @@ import {
     SidebarGroup,
     SidebarHeader,
     SidebarGroupLabel,
-    SidebarGroupAction,
     SidebarGroupContent,
     SidebarMenu,
     SidebarMenuItem,
     SidebarMenuButton,
 } from "@workspace/ui/components/sidebar"
 
-import { menuItemsByRole } from "./menu-items"
+import { isNavItemActive, menuItemsByRole } from "./menu-items"
 import {
     SidebarBrand,
     SidebarLogoutButton,
@@ -45,17 +43,13 @@ export function AdminSidebar() {
                 <SidebarGroup />
                 <SidebarGroup>
                     <SidebarGroupLabel>Admin</SidebarGroupLabel>
-                    <SidebarGroupAction>
-                        <Plus />
-                        <span className="sr-only">Add User</span>
-                    </SidebarGroupAction>
                     <SidebarGroupContent>
                         <SidebarMenu>
                             {ADMIN_LINKS.map((item) => (
                                 <SidebarMenuItem key={item.id}>
                                     <SidebarMenuButton
-                                        isActive={pathname === item.url}
-                                        render={<Link href={item.url} />}
+                                        isActive={isNavItemActive(pathname, item.url)}
+                                        render={<Link href={item.url} aria-current={isNavItemActive(pathname, item.url) ? "page" : undefined} />}
                                     >
                                         <item.icon />
                                         <span>{item.name}</span>

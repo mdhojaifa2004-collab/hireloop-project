@@ -9,7 +9,6 @@ import {
   EyeOffIcon,
   LockIcon,
   MailIcon,
-  ShieldCheckIcon,
   UserIcon,
 } from "lucide-react"
 
@@ -18,9 +17,11 @@ import { Checkbox } from "@workspace/ui/components/checkbox"
 import { Input } from "@workspace/ui/components/input"
 import { Label } from "@workspace/ui/components/label"
 import { cn } from "@workspace/ui/lib/utils"
+import { authClient } from "@/lib/auth-client"
 
 type AuthMode = "sign-in" | "sign-up"
 
+/** Public sign-up roles only. Admin accounts are provisioned separately. */
 export type UserRole = "seeker" | "recruiter" | "admin"
 
 export type AuthFormData = {
@@ -54,7 +55,6 @@ const fieldIconClass =
 const USER_ROLES: { value: UserRole; label: string; icon: typeof UserIcon }[] = [
   { value: "seeker", label: "Job Seeker", icon: UserIcon },
   { value: "recruiter", label: "Recruiter", icon: Building2Icon },
-  { value: "admin", label: "Admin", icon: ShieldCheckIcon },
 ]
 
 function Field({
@@ -146,7 +146,7 @@ function RoleSelector() {
       <div
         role="radiogroup"
         aria-labelledby="role-label"
-        className="grid grid-cols-3 gap-1 rounded-xl border border-white/10 bg-white/[0.04] p-1"
+        className="grid grid-cols-2 gap-1 rounded-xl border border-white/10 bg-white/[0.04] p-1"
       >
         {USER_ROLES.map(({ value, label, icon: Icon }) => (
           <label key={value} className="cursor-pointer">
@@ -195,6 +195,25 @@ export function AuthForm({ mode, onSubmit }: AuthFormProps) {
   const isSignUp = mode === "sign-up"
   const [error, setError] = React.useState<string | null>(null)
   const [pending, setPending] = React.useState(false)
+  // Google only becomes interactive when credentials are configured and this
+  // public flag is set. Never pretend OAuth works without real credentials.
+  const googleEnabled =
+    process.env.NEXT_PUBLIC_GOOGLE_OAUTH_ENABLED === "true"
+
+  async function handleGoogleSignIn() {
+    if (!googleEnabled) return
+
+    setError(null)
+
+    const { error } = await authClient.signIn.social({
+      provider: "google",
+      callbackURL: "/",
+    })
+
+    if (error) {
+      setError(error.message || "Could not start Google sign-in.")
+    }
+  }
   const [collected, setCollected] = React.useState<
     Record<string, FormDataEntryValue> | null
   >(null)
@@ -432,12 +451,19 @@ export function AuthForm({ mode, onSubmit }: AuthFormProps) {
         <Button
           type="button"
           variant="outline"
-          onClick={() => console.info(`[auth:${mode}] google oauth clicked`)}
-          className="mt-2.5 h-12 w-full rounded-xl border-white/10 bg-white/[0.04] font-label text-[15px] font-medium text-white hover:bg-white/[0.08] hover:text-white"
+          disabled={!googleEnabled}
+          onClick={handleGoogleSignIn}
+          className="mt-2.5 h-12 w-full rounded-xl border-white/10 bg-white/[0.04] font-label text-[15px] font-medium text-white hover:bg-white/[0.08] hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
         >
           <GoogleIcon className="size-[18px]" />
           Continue with Google
         </Button>
+
+        {!googleEnabled ? (
+          <p className="mt-2 text-center text-xs text-white/40">
+            Google sign-in is not configured yet. Use email and password.
+          </p>
+        ) : null}
 
         {preview ? (
           <div className="mt-5 rounded-xl border border-primary/25 bg-primary/[0.07] p-4">

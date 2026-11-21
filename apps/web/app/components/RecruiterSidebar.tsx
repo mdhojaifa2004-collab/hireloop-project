@@ -18,7 +18,7 @@ import {
     SidebarMenuButton,
 } from "@workspace/ui/components/sidebar"
 
-import { menuItemsByRole } from "./menu-items"
+import { isNavItemActive, menuItemsByRole } from "./menu-items"
 import {
     SidebarBrand,
     SidebarLogoutButton,
@@ -45,7 +45,9 @@ export function RecruiterSidebar() {
                 <SidebarGroup />
                 <SidebarGroup>
                     <SidebarGroupLabel>Recruiter</SidebarGroupLabel>
-                    <SidebarGroupAction>
+                    {/* FIX: This action now opens the Add New Job page instead
+                        of being a button that did nothing. */}
+                    <SidebarGroupAction render={<Link href="/dashboard/recruiter/new" />}>
                         <Plus />
                         <span className="sr-only">Post a Job</span>
                     </SidebarGroupAction>
@@ -54,8 +56,8 @@ export function RecruiterSidebar() {
                             {RECRUITER_LINKS.map((item) => (
                                 <SidebarMenuItem key={item.id}>
                                     <SidebarMenuButton
-                                        isActive={pathname === item.url}
-                                        render={<Link href={item.url} />}
+                                        isActive={isNavItemActive(pathname, item.url)}
+                                        render={<Link href={item.url} aria-current={isNavItemActive(pathname, item.url) ? "page" : undefined} />}
                                     >
                                         <item.icon />
                                         <span>{item.name}</span>

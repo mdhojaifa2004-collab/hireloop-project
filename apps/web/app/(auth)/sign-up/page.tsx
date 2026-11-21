@@ -4,6 +4,7 @@
 import { AuthForm } from "@/components/auth-form";
 import type { AuthFormData } from "@/components/auth-form";
 import { authClient } from "@/lib/auth-client";
+import { dashboardPathForRole } from "@/lib/roles";
 import { useRouter } from 'next/navigation'
 
 
@@ -22,13 +23,15 @@ const router = useRouter();
       });
 
       if (error) {
-        console.error("SignUp Error:", error);
-        return;
+        // Surface backend validation (e.g. an attempted admin role) in the form.
+        throw new Error(error.message || "Could not create your account.")
       }
 
-      console.log("SignUp Success:", signUpResponse);
-      router.refresh();
-      router.push('/')
+      // Send the new user straight to their role's dashboard.
+      router.push(
+        dashboardPathForRole(signUpResponse?.user?.role ?? data.role)
+      )
+      router.refresh()
   };
 
   return <AuthForm mode="sign-up" onSubmit={handleSignUp} />;

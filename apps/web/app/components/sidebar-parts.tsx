@@ -159,7 +159,7 @@ export function SidebarPublicLinks() {
                         <SidebarMenuItem key={item.id}>
                             <SidebarMenuButton
                                 isActive={isActive(item.url)}
-                                render={<Link href={item.url} />}
+                                render={<Link href={item.url} aria-current={isActive(item.url) ? "page" : undefined} />}
                             >
                                 <item.icon />
                                 <span>{item.name}</span>

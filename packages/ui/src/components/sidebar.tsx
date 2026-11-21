@@ -180,6 +180,8 @@ function Sidebar({
   }
 
   if (isMobile) {
+    // FIX: The mobile sheet now keeps its close button (removed [&>button]:hidden)
+    // so the sidebar can be dismissed without tapping the backdrop.
     return (
       <Sheet open={openMobile} onOpenChange={setOpenMobile} {...props}>
         <SheetContent
@@ -187,7 +189,7 @@ function Sidebar({
           data-sidebar="sidebar"
           data-slot="sidebar"
           data-mobile="true"
-          className="w-(--sidebar-width) bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden"
+          className="w-(--sidebar-width) bg-sidebar p-0 text-sidebar-foreground"
           style={
             {
               "--sidebar-width": SIDEBAR_WIDTH_MOBILE,
@@ -514,7 +516,15 @@ function SidebarMenuButton({
     defaultTagName: "button",
     props: mergeProps<"button">(
       {
-        className: cn(sidebarMenuButtonVariants({ variant, size }), className),
+        // FIX: Apply the active styles directly. Passing the flag only through
+        // useRender's `state` did not emit an attribute, so the current page
+        // was never highlighted in the sidebar.
+        className: cn(
+          sidebarMenuButtonVariants({ variant, size }),
+          isActive &&
+            "bg-sidebar-accent font-medium text-sidebar-accent-foreground",
+          className
+        ),
       },
       props
     ),
